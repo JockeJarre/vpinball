@@ -1226,8 +1226,8 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
       if (keyEvent == 2) // Do not react on key up (only key down or long press)
          return;
       const bool up = keycode == g_pplayer->m_rgKeys[eRightFlipperKey];
-      const float incSpeed = (up ? 0.2f : -0.2f) * (1.0f + max(9.f, (msec() - startOfPress) / 500.0f));
       const float step = up ? 1.f : -1.f;
+      const float incSpeed = step * 0.05f * min(10.f, 0.75f + (float)(msec() - startOfPress) / 500.0f);
       ViewSetup &viewSetup = table->mViewSetups[table->m_BG_current_set];
       const bool isWindow = viewSetup.mMode == VLM_WINDOW;
       bool modified = true;
@@ -1268,51 +1268,51 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
          UpdateTweakPage();
          break;
       }
-      case BS_LookAt: viewSetup.mLookAt += 0.25f * incSpeed; break;
-      case BS_FOV: viewSetup.mFOV += 0.25f * incSpeed; break;
-      case BS_Layback: viewSetup.mLayback += 0.25f * incSpeed; break;
-      case BS_ViewHOfs: viewSetup.mViewHOfs += (isWindow ? 0.5f : 0.25f) * incSpeed; break;
-      case BS_ViewVOfs: viewSetup.mViewVOfs += (isWindow ? 0.5f : 0.25f) * incSpeed; break;
+      case BS_LookAt: viewSetup.mLookAt += incSpeed; break;
+      case BS_FOV: viewSetup.mFOV += incSpeed; break;
+      case BS_Layback: viewSetup.mLayback += incSpeed; break;
+      case BS_ViewHOfs: viewSetup.mViewHOfs += incSpeed; break;
+      case BS_ViewVOfs: viewSetup.mViewVOfs += incSpeed; break;
       case BS_XYZScale:
-         viewSetup.mSceneScaleX += 0.0025f * 0.5f * incSpeed;
-         viewSetup.mSceneScaleY += 0.0025f * 0.5f * incSpeed;
-         viewSetup.mSceneScaleZ += 0.0025f * 0.5f * incSpeed;
+         viewSetup.mSceneScaleX += 0.005f * incSpeed;
+         viewSetup.mSceneScaleY += 0.005f * incSpeed;
+         viewSetup.mSceneScaleZ += 0.005f * incSpeed;
          break;
-      case BS_XScale: viewSetup.mSceneScaleX += 0.0025f * 0.5f * incSpeed; break;
-      case BS_YScale: viewSetup.mSceneScaleY += 0.0025f * 0.5f * incSpeed; break;
-      case BS_ZScale: viewSetup.mSceneScaleZ += 0.0025f * 0.5f * incSpeed; break;
+      case BS_XScale: viewSetup.mSceneScaleX += 0.005f * incSpeed; break;
+      case BS_YScale: viewSetup.mSceneScaleY += 0.005f * incSpeed; break;
+      case BS_ZScale: viewSetup.mSceneScaleZ += 0.005f * incSpeed; break;
       case BS_XOffset:
          if (isWindow)
-            table->m_settings.SaveValue(Settings::Player, "ScreenPlayerX"s, table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerX"s, 0.0f) + 0.125f * incSpeed);
+            table->m_settings.SaveValue(Settings::Player, "ScreenPlayerX"s, table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerX"s, 0.0f) + 0.5f * incSpeed);
          else
-            viewSetup.mViewX += 2.5f * incSpeed;
+            viewSetup.mViewX += 10.f * incSpeed;
          break;
       case BS_YOffset:
          if (isWindow)
-            table->m_settings.SaveValue(Settings::Player, "ScreenPlayerY"s, table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerY"s, 0.0f) + 0.125f * incSpeed);
+            table->m_settings.SaveValue(Settings::Player, "ScreenPlayerY"s, table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerY"s, 0.0f) + 0.5f * incSpeed);
          else
-            viewSetup.mViewY += 2.5f * incSpeed;
+            viewSetup.mViewY += 10.f * incSpeed;
          break;
       case BS_ZOffset:
          if (isWindow)
-            table->m_settings.SaveValue(Settings::Player, "ScreenPlayerZ"s, table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerZ"s, 70.0f) + 0.125f * incSpeed);
+            table->m_settings.SaveValue(Settings::Player, "ScreenPlayerZ"s, table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerZ"s, 70.0f) + 0.5f * incSpeed);
          else
-            viewSetup.mViewZ += (viewSetup.mMode == VLM_LEGACY ? 25.f : 2.5f) * incSpeed;
+            viewSetup.mViewZ += (viewSetup.mMode == VLM_LEGACY ? 100.f : 10.f) * incSpeed;
          break;
-      case BS_WndTopZOfs: viewSetup.mWindowTopZOfs += 2.5f * incSpeed; break;
-      case BS_WndBottomZOfs: viewSetup.mWindowBottomZOfs += 2.5f * incSpeed; break;
+      case BS_WndTopZOfs: viewSetup.mWindowTopZOfs += 10.f * incSpeed; break;
+      case BS_WndBottomZOfs: viewSetup.mWindowBottomZOfs += 10.f * incSpeed; break;
 
       // Table customization
       case BS_DayNight:
       {
-         m_player->m_globalEmissionScale = clamp(m_player->m_globalEmissionScale + step * 0.005f, 0.f, 1.f);
+         m_player->m_globalEmissionScale = clamp(m_player->m_globalEmissionScale + incSpeed * 0.05f, 0.f, 1.f);
          m_player->SetupShaders();
          m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
          break;
       }
       case BS_Difficulty:
       {
-         table->m_globalDifficulty = clamp(table->m_globalDifficulty + step * 0.005f, 0.f, 1.f);
+         table->m_globalDifficulty = clamp(table->m_globalDifficulty + incSpeed * 0.05f, 0.f, 1.f);
          m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
          break;
       }
@@ -1348,9 +1348,8 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
          {
             auto opt = m_live_table->m_settings.GetSettings()[activeTweakSetting - BS_Custom];
             float nTotalSteps = (opt.maxValue - opt.minValue) / opt.step;
-            int nMsecPerStep = nTotalSteps < 20.f ? 500 : 30; // continuous vs discrete sliding
-            U32 elapsed = msec() - m_lastTweakKeyDown;
-            int nSteps = elapsed / nMsecPerStep;
+            int nMsecPerStep = nTotalSteps < 20.f ? 500 : max(5, 30 - (int) (msec() - startOfPress) / 500); // discrete vs continuous sliding
+            int nSteps = (msec() - m_lastTweakKeyDown) / nMsecPerStep;
             if (keyEvent == 1)
             {
                nSteps = 1;
@@ -2048,7 +2047,7 @@ void LiveUI::UpdateMainUI()
          view.Invert();
          const vec3 up = view.GetOrthoNormalUp(), dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
          const vec3 camTarget = pos - dir * m_camDistance;
-         m_camDistance *= (float) pow(1.1, -ImGui::GetIO().MouseWheel);
+         m_camDistance *= powf(1.1f, -ImGui::GetIO().MouseWheel);
          const vec3 newEye = camTarget + dir * m_camDistance;
          m_camView.SetLookAtRH(newEye, camTarget, up);
       }
@@ -3290,8 +3289,8 @@ void LiveUI::CameraProperties(bool is_live)
    if (BEGIN_PROP_TABLE)
    {
       const ViewSetupID vsId = (ViewSetupID) m_selection.camera;
-      static const string layoutModeLabels[] = { "Relative"s, "Absolute"s};
-      int startup_mode = m_table ? (int)m_table->mViewSetups[vsId].mMode :0;
+      static const string layoutModeLabels[] = { "Relative"s, "Absolute"s };
+      int startup_mode = m_table ? (int)m_table->mViewSetups[vsId].mMode : 0;
       int live_mode = m_live_table ? (int)m_live_table->mViewSetups[vsId].mMode : 0;
       auto upd_mode = [table, vsId](bool is_live, int prev, int v) { table->mViewSetups[vsId].mMode = (ViewLayoutMode)v; };
       // View
@@ -3448,7 +3447,7 @@ void LiveUI::MaterialProperties(bool is_live)
    if (ImGui::CollapsingHeader("Visual", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
       static const string matType[] = { "Default"s, "Metal"s };
-      PropCombo("Type", m_table, is_live, startup_material ? (int *)&(startup_material->m_type) : nullptr, live_material ? (int *)&(live_material->m_type) : nullptr, 3, matType);
+      PropCombo("Type", m_table, is_live, startup_material ? (int *)&(startup_material->m_type) : nullptr, live_material ? (int *)&(live_material->m_type) : nullptr, 2, matType);
       if (material != nullptr)
       {
          PropRGB("Base Color", m_table, is_live, startup_material ? &(startup_material->m_cBase) : nullptr, live_material ? &(live_material->m_cBase) : nullptr);

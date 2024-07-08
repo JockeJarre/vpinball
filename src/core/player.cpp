@@ -691,7 +691,6 @@ void Player::OnClose()
       return;
    }
    assert(g_pplayer == this);
-   g_pplayer = nullptr;
    m_closing = CS_CLOSED;
    PLOGI << "Closing player... [Player's VBS intepreter is #" << m_ptable->m_pcv->m_pScript << "]";
 
@@ -740,7 +739,7 @@ void Player::OnClose()
       {
          for (Texture *image : m_ptable->m_vimage)
          {
-            if (image->m_pdsBuffer == memtex)
+            if (image->m_szName.length() > 0 && image->m_pdsBuffer == memtex)
             {
                tinyxml2::XMLElement *node = xmlDoc.NewElement("texture");
                node->SetText(image->m_szName.c_str());
@@ -802,13 +801,6 @@ void Player::OnClose()
 
    m_limiter.Shutdown();
 
-   if (m_implicitPlayfieldMesh)
-   {
-      RemoveFromVectorSingle(m_ptable->m_vedit, (IEditable *)m_implicitPlayfieldMesh);
-      m_ptable->m_pcv->RemoveItem(m_implicitPlayfieldMesh->GetScriptable());
-      m_implicitPlayfieldMesh = nullptr;
-   }
-
    for (auto probe : m_ptable->m_vrenderprobe)
       probe->RenderRelease();
    for (auto renderable : m_vhitables)
@@ -817,6 +809,14 @@ void Player::OnClose()
       ball->m_pballex->RenderRelease();
    for (auto hitable : m_vhitables)
       hitable->EndPlay();
+
+   if (m_implicitPlayfieldMesh)
+   {
+      RemoveFromVectorSingle(m_ptable->m_vedit, (IEditable *)m_implicitPlayfieldMesh);
+      m_ptable->m_pcv->RemoveItem(m_implicitPlayfieldMesh->GetScriptable());
+      delete m_implicitPlayfieldMesh;
+      m_implicitPlayfieldMesh = nullptr;
+   }
 
    for (size_t i = 0; i < m_vho.size(); i++)
       delete m_vho[i];
@@ -873,6 +873,8 @@ void Player::OnClose()
    m_controlclsidsafe.clear();
 
    m_changed_vht.clear();
+
+   g_pplayer = nullptr;
 
    restore_win_timer_resolution();
 
@@ -1554,6 +1556,8 @@ HRESULT Player::Init()
                   int filter = 0, clampU = 0, clampV = 0;
                   bool linearRGB = false, preRenderOnly = false;
                   const char *name = node->GetText();
+                  if (name == nullptr)
+                     continue;
                   Texture *tex = m_ptable->GetImage(name);
                   if (tex == nullptr 
                      || node->QueryBoolAttribute("linear", &linearRGB) != tinyxml2::XML_SUCCESS
