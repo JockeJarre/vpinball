@@ -65,6 +65,7 @@ public:
    Vertex3Ds m_oldVel;       // hack for kicker hole handling only
 
    Vertex3Ds m_lastEventPos; // last hit event position (to filter hit 'equal' hit events)
+   float m_lastEventSqrDist; // distance travelled since last event
 
    Vertex3Ds m_angularmomentum;
 

@@ -308,7 +308,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
 Player::~Player()
 {
-   assert(g_pplayer == this);
+   assert(g_pplayer == nullptr);
    m_closing = CS_CLOSED;
    m_ptable->StopPlaying();
    delete m_staticPrepassRT;
@@ -691,7 +691,7 @@ void Player::OnClose()
       return;
    }
    assert(g_pplayer == this);
-   g_pplayer->m_closing = CS_CLOSED;
+   m_closing = CS_CLOSED;
    PLOGI << "Closing player... [Player's VBS intepreter is #" << m_ptable->m_pcv->m_pScript << "]";
 
     g_frameProfiler.LogWorstFrame();
@@ -739,7 +739,7 @@ void Player::OnClose()
       {
          for (Texture *image : m_ptable->m_vimage)
          {
-            if (image->m_pdsBuffer == memtex)
+            if (image->m_szName.length() > 0 && image->m_pdsBuffer == memtex)
             {
                tinyxml2::XMLElement *node = xmlDoc.NewElement("texture");
                node->SetText(image->m_szName.c_str());
@@ -801,13 +801,6 @@ void Player::OnClose()
 
    m_limiter.Shutdown();
 
-   if (m_implicitPlayfieldMesh)
-   {
-      RemoveFromVectorSingle(m_ptable->m_vedit, (IEditable *)m_implicitPlayfieldMesh);
-      m_ptable->m_pcv->RemoveItem(m_implicitPlayfieldMesh->GetScriptable());
-      m_implicitPlayfieldMesh = nullptr;
-   }
-
    for (auto probe : m_ptable->m_vrenderprobe)
       probe->RenderRelease();
    for (auto renderable : m_vhitables)
@@ -816,6 +809,14 @@ void Player::OnClose()
       ball->m_pballex->RenderRelease();
    for (auto hitable : m_vhitables)
       hitable->EndPlay();
+
+   if (m_implicitPlayfieldMesh)
+   {
+      RemoveFromVectorSingle(m_ptable->m_vedit, (IEditable *)m_implicitPlayfieldMesh);
+      m_ptable->m_pcv->RemoveItem(m_implicitPlayfieldMesh->GetScriptable());
+      delete m_implicitPlayfieldMesh;
+      m_implicitPlayfieldMesh = nullptr;
+   }
 
    for (size_t i = 0; i < m_vho.size(); i++)
       delete m_vho[i];
@@ -873,6 +874,8 @@ void Player::OnClose()
 
    m_changed_vht.clear();
 
+   g_pplayer = nullptr;
+
    restore_win_timer_resolution();
 
    LockForegroundWindow(false);
@@ -903,8 +906,7 @@ void Player::OnClose()
 #endif
 
    // Destroy this player
-   delete g_pplayer; // Win32xx call Window destroy for us from destructor, don't call it directly or it will crash due to dual destruction
-   g_pplayer = nullptr;
+   delete this; // Win32xx call Window destroy for us from destructor, don't call it directly or it will crash due to dual destruction
    PLOGI << "Player closed.";
 }
 
@@ -1554,6 +1556,8 @@ HRESULT Player::Init()
                   int filter = 0, clampU = 0, clampV = 0;
                   bool linearRGB = false, preRenderOnly = false;
                   const char *name = node->GetText();
+                  if (name == nullptr)
+                     continue;
                   Texture *tex = m_ptable->GetImage(name);
                   if (tex == nullptr 
                      || node->QueryBoolAttribute("linear", &linearRGB) != tinyxml2::XML_SUCCESS
@@ -1766,7 +1770,7 @@ HRESULT Player::Init()
       m_liveUI->PushNotification("You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger\n"
                                  "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit"s, 12000);
 
-   if (m_playMode == 1 && m_stereo3D != STEREO_VR)
+   if (m_playMode == 1)
       m_liveUI->OpenTweakMode();
    else if (m_playMode == 2 && m_stereo3D != STEREO_VR)
       m_liveUI->OpenLiveUI();
@@ -3636,14 +3640,14 @@ void Player::PrepareVideoBuffers()
          m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Left Eye"s, leftTexture, false);
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
          m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, leftTexture, true, false, 0, 0, w, h, 0, 0, w, h, 0, 0);
-         if (m_liveUI->IsTweakMode())
+         if (m_liveUI->IsTweakMode()) // Render as an overlay in VR (not in preview) at the eye resolution, without depth
             m_pin3d.m_pd3dPrimaryDevice->RenderLiveUI();
 
          RenderTarget *rightTexture = m_pin3d.m_pd3dPrimaryDevice->GetOffscreenVR(1);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Right Eye"s, rightTexture, false);
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
          m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, rightTexture, true, false, 0, 0, w, h, 0, 0, w, h, 1, 0);
-         if (m_liveUI->IsTweakMode())
+         if (m_liveUI->IsTweakMode()) // Render as an overlay in VR (not in preview) at the eye resolution, without depth
             m_pin3d.m_pd3dPrimaryDevice->RenderLiveUI();
 
          RenderTarget *outRT = m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
@@ -3725,7 +3729,7 @@ void Player::PrepareVideoBuffers()
       renderedRT = outputRT;
    }
 
-   if (!stereo || m_stereo3D != STEREO_VR)
+   if (m_stereo3D != STEREO_VR)
    {
       // Except for VR, render LiveUI after tonemapping and stereo (otherwise it would break the calibration process for stereo anaglyph)
       g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
@@ -4088,7 +4092,7 @@ void Player::SubmitFrame()
    // Submit to GPU render queue
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_SUBMIT);
    m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
-   if (m_stereo3D == STEREO_VR && m_vrPreview != VRPREVIEW_DISABLED && !m_liveUI->IsTweakMode())
+   if (m_stereo3D == STEREO_VR && m_vrPreview != VRPREVIEW_DISABLED && !m_liveUI->IsTweakMode() && m_liveUI->IsOpened())
    {
       m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("ImgUI-Preview"s, m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer(), false);
       m_liveUI->Update(m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer());
