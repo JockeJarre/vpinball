@@ -63,10 +63,12 @@
 'L BRACKET	26		Z				44
 
 Option Explicit
-
+On Error Resume Next
 '
 ' This is a list of standard keys used by *.vbs files
 '
+' You do not need to change this file to have your custom settings active:
+' Just create a file called VPMKeysCustom.vbs with your own definitions and it will be loaded first.
 
 ' Double leaf/staged flipper switches: By default these are just set to LeftFlipperKey and RightFlipperKey
 Dim keyStagedFlipperL : keyStagedFlipperL = LeftFlipperKey
@@ -127,3 +129,5 @@ Const keyGameSpecific1 = 16  '(Q)
 Const keyGameSpecific2 = 17  '(W)
 Const keyGameSpecific3 = 18  '(E)
 Const keyGameSpecific4 = 19  '(R)
+
+On Error Goto 0

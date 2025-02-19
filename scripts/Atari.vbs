@@ -12,10 +12,12 @@ Private Sub LoadCore
 	If VPBuildVersion < 0 Or Err Then
 		Dim fso : Set fso = CreateObject("Scripting.FileSystemObject") : Err.Clear
 		ExecuteGlobal fso.OpenTextFile("core.vbs", 1).ReadAll    : If Err Then MsgBox "Can't open ""core.vbs""" : Exit Sub
-		ExecuteGlobal fso.OpenTextFile("VPMKeys.vbs", 1).ReadAll : If Err Then MsgBox "Can't open ""vpmkeys.vbs""" : Exit Sub
+		ExecuteGlobal fso.OpenTextFile("VPMKeysCustom.vbs", 1).ReadAll : If Err and Err.Number <> 53 Then MsgBox "Error loading your custom ""VPMKeysCustom.vbs"": " & Err.Number
+		ExecuteGlobal fso.OpenTextFile("VPMKeys.vbs", 1).ReadAll : If Err Then MsgBox "Can't open ""VPMKeys.vbs""" : Exit Sub
 	Else
 		ExecuteGlobal GetTextFile("core.vbs")    : If Err Then MsgBox "Can't open ""core.vbs"""    : Exit Sub
-		ExecuteGlobal GetTextFile("VPMKeys.vbs") : If Err Then MsgBox "Can't open ""vpmkeys.vbs""" : Exit Sub
+		ExecuteGlobal GetTextFile("VPMKeysCustom.vbs") : If Err and Err.Number > 0 Then MsgBox "Error loading your custom ""VPMKeysCustom.vbs"": " & Err.Number : Exit Sub
+		ExecuteGlobal GetTextFile("VPMKeys.vbs") : If Err Then MsgBox "Can't open ""VPMKeys.vbs""" : Exit Sub
 	End If
 End Sub
 
