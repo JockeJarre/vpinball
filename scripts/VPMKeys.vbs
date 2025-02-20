@@ -71,8 +71,9 @@ On Error Resume Next
 ' Just create a file called VPMKeysCustom.vbs with your own definitions and it will be loaded first.
 
 ' Double leaf/staged flipper switches: By default these are just set to LeftFlipperKey and RightFlipperKey
-Dim keyStagedFlipperL : keyStagedFlipperL = LeftFlipperKey
-Dim keyStagedFlipperR : keyStagedFlipperR = RightFlipperKey
+' Change to StagedLeftFlipperKey and StagedRightFlipperKey?
+If IsMissing(keyStagedFlipperL) Then Dim keyStagedFlipperL : keyStagedFlipperL = LeftFlipperKey
+If IsMissing(keyStagedFlipperR) Then Dim keyStagedFlipperR : keyStagedFlipperR = RightFlipperKey
 
 Const keyShowOpts	= 59  '(F1)		Show options
 Const keyShowKeys	= 60  '(F2)		Show Keys
