@@ -89,8 +89,8 @@ static const string regkey_string[eCKeys] = {
 static constexpr int regkey_defdik[eCKeys] = {
    DIK_LSHIFT,
    DIK_RSHIFT,
-   DIK_LWIN,
-   DIK_RALT,
+   DIK_LSHIFT,
+   DIK_RSHIFT,
    DIK_Z,
    DIK_SLASH,
    DIK_SPACE,
