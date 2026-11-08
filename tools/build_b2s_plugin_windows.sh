@@ -58,15 +58,15 @@ EOF
 fi
 
 # The plugin includes pinmame/PinMAMEPlugin.h from third-party/include/pinmame, which the full
-# external.sh dependency build extracts from the vpinmame sources. For a plugin only build, we
+# external.sh dependency build extracts from the pinmame sources. For a plugin only build, we
 # simply fetch the header (it is a standalone interface declaration)
 if [ ! -f third-party/include/pinmame/PinMAMEPlugin.h ]; then
    echo "Fetching PinMAME plugin API header from the vpinmame repository"
    tmp="$(mktemp -d)"
    trap 'rm -rf "${tmp}"' EXIT
-   git clone --depth 1 https://github.com/vpinball/vpinmame "${tmp}/vpinmame"
+   git clone --depth 1 https://github.com/vpinball/pinmame "${tmp}/pinmame"
    mkdir -p third-party/include/pinmame
-   cp "${tmp}/vpinmame/src/libpinmame/PinMAMEPlugin.h" third-party/include/pinmame/
+   cp "${tmp}/pinmame/src/libpinmame/PinMAMEPlugin.h" third-party/include/pinmame/
 fi
 
 BUILD_DIR="build-b2s-win-${ARCH}"
