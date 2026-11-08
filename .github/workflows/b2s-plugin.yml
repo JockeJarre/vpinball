@@ -30,6 +30,10 @@ on:
       - make/CMakeLists_plugins.txt
       - .github/workflows/b2s-plugin.yml
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   build:
     name: B2S plugin ${{ matrix.platform }}-${{ matrix.arch }}
