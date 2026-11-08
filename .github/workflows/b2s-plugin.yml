@@ -21,7 +21,7 @@ on:
       - make/CMakeLists_plugins.txt
       - .github/workflows/b2s-plugin.yml
   push:
-    branches: [main]
+    branches: [master]
     paths:
       - plugins/b2s/**
       - plugins/plugins/**
