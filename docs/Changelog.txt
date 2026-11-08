@@ -16,6 +16,8 @@ FEATURES:
 
 - add -v command line option to just output the version and quit
 - add -CaptureAttract command line option to automatically capture an attract video
+- B2S plugin: add a 'Keep aspect ratio' setting (plugin settings page) which keeps the aspect ratio of the backglass
+  and score view images, filling the rest of the window with black borders on the sides matching the window shape
 
 - Folder layout has been redesigned:
   . Folder layout now conforms to platform requirements, with the application stored in its read-only application folder (for example 'C:\Program Files' under Windows),
