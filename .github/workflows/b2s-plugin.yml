@@ -57,13 +57,13 @@ jobs:
         run: /c/msys64/usr/bin/bash.exe -l -c "pacman -S --noconfirm --needed make diffutils mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-tools"
       - name: Fetch the PinMAME plugin API header
         # The plugin includes pinmame/PinMAMEPlugin.h from third-party/include/pinmame, which the
-        # full dependency build (external.sh) extracts from the vpinmame sources. A plugin only
+        # full dependency build (external.sh) extracts from the pinmame sources. A plugin only
         # build just needs that single standalone interface header. Download it raw: cloning with
         # git would reuse the credentials injected by actions/checkout, which are rejected by
         # other repositories than the checked out one
         run: |
           mkdir -p third-party/include/pinmame
-          curl -fsSL https://raw.githubusercontent.com/vpinball/vpinmame/master/src/libpinmame/PinMAMEPlugin.h -o third-party/include/pinmame/PinMAMEPlugin.h
+          curl -fsSL https://raw.githubusercontent.com/vpinball/pinmame/master/src/libpinmame/PinMAMEPlugin.h -o third-party/include/pinmame/PinMAMEPlugin.h
           head -3 third-party/include/pinmame/PinMAMEPlugin.h
       - if: matrix.platform == 'windows'
         name: Build (MSVC)
